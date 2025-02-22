@@ -174,7 +174,7 @@ def add_tags(name: str, tags: list[str]) -> Optional[any]:
        
        """
        for tag in tags:
-            items.update_one({"name": name}, {"$push": {"tag": tag}})
+            items.update_one({"name": name}, {"$push": {"tags": tag}})
        return items.find_one({"name": name})
 
 def remove_tags(name: str, tags: list[str]) -> None:
@@ -185,10 +185,10 @@ def remove_tags(name: str, tags: list[str]) -> None:
         tags (list[str]): the list of tags to remove from item
     """
     for tag in tags:
-        items.update_one({"name": name}, {"$pull": {"tag": tag}})
+        items.update_one({"name": name}, {"$pull": {"tags": tag}})
 
 
-def create_item(name: str, quantity: float, price: float = 0.0, description: str = "", category: str = "") -> Optional[any]:
+def create_item(name: str, quantity: float, price: float = 0.0, description: str = "", tags: list[str] = []) -> Optional[any]:
         """Creates a new item
 
         Args:
@@ -196,12 +196,12 @@ def create_item(name: str, quantity: float, price: float = 0.0, description: str
                 quantity (float): the quantity of the item
                 price (float, optional): the price of the item. Defaults to 0.0.
                 description (str, optional): the description of the item. Defaults to "".
-                category (str, optional): the category of the item. Defaults to "".
+                tags (list[str], optional): the tags on the item. Defaults to [].
 
         Returns:
                 Optional[any]: the created item or None if failed
         """
-        items.insert_one({"name": name, "price": price, "quantity": quantity, "description": description, "category": category})
+        items.insert_one({"name": name, "price": price, "quantity": quantity, "description": description, "tags": tags})
         return items.find_one({"name": name})
     
 def get_id_from_name(name: str) -> str:
