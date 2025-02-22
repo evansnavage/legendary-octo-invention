@@ -19,7 +19,7 @@ except pymongo.errors.ConfigurationError:
     
 db = client.inventory
 
-test_items = db["items"]
+test_items = db["test_items"]
 
 item_test_documents = [{ "name": "Green Paint", "price": 3.99, "quantity": 10, "description": "Paint that is green", "tag": ["paint"], "distributor": "Sherwin Williams" },
                     { "name": "Blue Paint", "price": 3.99, "quantity": 10 },
@@ -84,8 +84,8 @@ def get_all_items() -> Collection:
         Returns:
                 Collection: A collection of all items
         """
-        curser = items.find({}, {"_id": 0})
-        return [doc for doc in curser]
+        cursor = items.find({}, {"_id": 0})
+        return [doc for doc in cursor]
 def get_items_by_name(name: str) -> Collection:
         """Returns all items with the given name
 
