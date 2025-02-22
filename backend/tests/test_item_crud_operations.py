@@ -1,6 +1,6 @@
 import unittest
 
-from backend.src.dbaccess import *
+from backend.src.item_access import *
 
 class TestCRUDOperations(unittest.TestCase):
     
