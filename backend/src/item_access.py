@@ -279,3 +279,14 @@ def get_items_by_tag(tag: str) -> Collection:
         """
         data = items.find({"tags": {"$in": [tag]}}, {"_id": 0})
         return [doc for doc in data]
+
+def get_item_quantity(name: str) -> float:
+        """Returns the quantity of the item with the given name
+
+        Args:
+                name (str): the name of the item
+
+        Returns:
+                float: the quantity of the item
+        """
+        return items.find_one({"name": name}, {"quantity": 1})["quantity"]

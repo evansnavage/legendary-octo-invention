@@ -99,5 +99,32 @@ class TestCRUDOperations(unittest.TestCase):
         item = get_items_by_name("test")[0]
         self.assertEqual(item['distributor'], "test")
         
+    def test_update_item_quantity(self):
+        drop_all_items()
+        create_item("test", 10, 10, "test")
+        update_item_quantity("test", 20)
+        item = get_items_by_name("test")[0]
+        self.assertEqual(item['quantity'], 20)
+    
+    def test_get_items_by_tag(self):
+        drop_all_items()
+        create_item("test", 10, 10, "test", ["test", "test2", "test3"])
+        create_item("test2", 10, 10, "test", ["test", "test2", "test3"])
+        create_item("test3", 10, 10, "test", ["test", "test2", "test3"])
+        items = get_items_by_tag("test")
+        self.assertEqual(len(items), 3)
+    
+    def test_get_item_price(self):
+        drop_all_items()
+        create_item("test", 10, 10, "test")
+        price = get_item_price("test")
+        self.assertEqual(price, 10)
+    
+    def test_get_item_quantity(self):
+        drop_all_items()
+        create_item("test", 10, 10, "test")
+        quantity = get_item_quantity("test")
+        self.assertEqual(quantity, 10)
+        
 if __name__ == '__main__':
     unittest.main()
