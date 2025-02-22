@@ -189,7 +189,7 @@ def remove_tags(name: str, tags: list[str]) -> None:
         items.update_one({"name": name}, {"$pull": {"tags": tag}})
 
 
-def create_item(name: str, quantity: float, price: float = 0.0, description: str = "", tags: list[str] = []) -> Optional[any]:
+def create_item(name: str, quantity: int, price: float = 0.0, description: str = "", tags: list[str] = []) -> Optional[any]:
         """Creates a new item
 
         Args:
