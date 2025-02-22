@@ -46,7 +46,7 @@ else:
 
 ### Basic Operation Setup ###
 items = db["items"]
-item_documents_default = [{ "name": "Green Paint", "price": 3.99, "quantity": 10, "description": "Paint that is green", "category": "Paint", "distributor": "Sherwin Williams" }]
+item_documents_default = [{ "name": "Green Paint", "price": 3.99, "quantity": 10, "description": "Paint that is green", "tags": ["Paint"], "distributor": "Sherwin Williams" }]
 try:
         items.insert_many(item_documents_default)
 except pymongo.errors.OperationFailure:
@@ -242,3 +242,17 @@ def insert_many_items(item_documents: Collection) -> int:
         """
         result = items.insert_many(item_documents)
         return len(result.inserted_ids)
+    
+def update_item_distributor(name: str, distributor: str) -> Optional[any]:
+        """Updates the distributor of the item with the given name
+        Will update all items with the given name
+
+        Args:
+                name (str): the name of the item to update
+                distributor (str): the new distributor of the item
+
+        Returns:
+                Optional[any]: the first updated item or None if not found
+        """
+        items.update_one({"name": name}, {"$set": {"distributor": distributor}})
+        return items.find_one({"name": name})

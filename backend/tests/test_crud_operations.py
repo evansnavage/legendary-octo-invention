@@ -92,5 +92,12 @@ class TestCRUDOperations(unittest.TestCase):
         delete_item_by_id(item_id)
         self.assertEqual(get_all_items(), [])
         
+    def test_update_distributor(self):
+        drop_all_items()
+        create_item("test", 10, 10, "test")
+        update_item_distributor("test", "test")
+        item = get_items_by_name("test")[0]
+        self.assertEqual(item['distributor'], "test")
+        
 if __name__ == '__main__':
     unittest.main()
