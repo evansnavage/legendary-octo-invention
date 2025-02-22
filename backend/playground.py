@@ -113,3 +113,4 @@ print("\n")
 my_result = my_collection.delete_many({ "$or": [{ "name": "elotes" }, { "name": "fried rice" }]})
 print("I deleted %x records." %(my_result.deleted_count))
 print("\n")
+

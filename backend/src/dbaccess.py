@@ -1,41 +1,42 @@
-from typing import Collection
+from typing import Collection, Optional
 import pymongo
 import sys
+import bson
 
 ### CONNECT AND TEST CONNECTION ###
 
 try:
-  client = pymongo.MongoClient("mongodb+srv://admin:1234@imscluster.vv08q.mongodb.net/")
-  
+    client = pymongo.MongoClient("mongodb+srv://admin:1234@imscluster.vv08q.mongodb.net/")
+    
 # return a friendly error if a URI error is thrown 
 except pymongo.errors.ConfigurationError:
-  print("An Invalid URI host error was received. Is your Atlas host name correct in your connection string?")
-  sys.exit(1)
-  
+    print("An Invalid URI host error was received. Is your Atlas host name correct in your connection string?")
+    sys.exit(1)
+    
 db = client.inventory
 
 test_products = db["products"]
 
 product_documents = [{ "name": "Green Paint", "price": 3.99, "quantity": 10, "description": "Paint that is green", "category": "Paint", "distributor": "Sherwin Williams" },
-                     { "name": "Blue Paint", "price": 3.99, "quantity": 10 },
-                     { "name": "Red Paint", "price": 3.99, "quantity": 10 },
-                     { "name": "Yellow Paint", "price": 3.99, "quantity": 10 }]
+                    { "name": "Blue Paint", "price": 3.99, "quantity": 10 },
+                    { "name": "Red Paint", "price": 3.99, "quantity": 10 },
+                    { "name": "Yellow Paint", "price": 3.99, "quantity": 10 }]
 
 try:
-    test_products.drop()
+        test_products.drop()
 except pymongo.errors.OperationFailure:
-    print("An authentication error was received. Are your username and password correct in your connection string?")
-    sys.exit(1)
+        print("An authentication error was received. Are your username and password correct in your connection string?")
+        sys.exit(1)
 
 try:
-    result = test_products.insert_many(product_documents)
+        result = test_products.insert_many(product_documents)
 except pymongo.errors.OperationFailure:
-    print("An authentication error was received. Are you sure your database user is authorized to perform write operations?")
-    sys.exit(1)
+        print("An authentication error was received. Are you sure your database user is authorized to perform write operations?")
+        sys.exit(1)
 else:
-    inserted_count = len(result.inserted_ids)
-    print("Inserted %x documents for test setup." %(inserted_count))
-    print ("\n")
+        inserted_count = len(result.inserted_ids)
+        print("Inserted %x documents for test setup." %(inserted_count))
+        print ("\n")
 
 ### END OF TEST OPERATIONS ###
 
@@ -44,127 +45,160 @@ else:
 products = db["products"]
 product_documents_default = [{ "name": "Green Paint", "price": 3.99, "quantity": 10, "description": "Paint that is green", "category": "Paint", "distributor": "Sherwin Williams" }]
 try:
-    products.insert_many(product_documents_default)
+        products.insert_many(product_documents_default)
 except pymongo.errors.OperationFailure:
-    print("An authentication error was received. Are you sure your database user is authorized to perform write operations?")
-    sys.exit(1)
+        print("An authentication error was received. Are you sure your database user is authorized to perform write operations?")
+        sys.exit(1)
 else:
-    inserted_count = len(result.inserted_ids)
-    print("Inserted %x documents for operation setup." %(inserted_count))
-    print ("\n")
-    print ("Database prepared.")
+        inserted_count = len(result.inserted_ids)
+        print("Inserted %x documents for operation setup." %(inserted_count))
+        print ("\n")
+        print ("Database prepared.")
 
 ### CRUD OPERATIONS ###
 
+def drop_all_products():
+        """Drops all products from the database
+        """
+        products.drop()
+
 def get_all_products() -> Collection:
-    """Returns all products
+        """Returns all products
 
-    Returns:
-        Collection: A collection of all products
-    """
-    return products.find()
-
+        Returns:
+                Collection: A collection of all products
+        """
+        curser = products.find({}, {"_id": 0})
+        return [doc for doc in curser]
 def get_products_by_name(name: str) -> Collection:
-    """Returns all products with the given name
+        """Returns all products with the given name
 
-    Args:
-        name (str): The name of the products to find
+        Args:
+                name (str): The name of the products to find
 
-    Returns:
-        Collection: documents with the given name
-    """
-    return products.find({"name": name})
+        Returns:
+                Collection: documents with the given name
+        """
+        data = products.find({"name": name}, {"_id": 0})
+        return [doc for doc in data]
 
-def get_product_by_id(id) -> any | None:
-    """Returns the product with the id
+def get_product_by_id(id: str) -> Optional[any]:
+        """Returns the product with the id
 
-    Args:
-        id (string): The id of the product to find
+        Args:
+                id (string): The id of the product to find
 
-    Returns:
-        any | None: The bson object of the product or None if not found
-    """
-    return products.find_one({"id": id})
+        Returns:
+                Optional[any]: The bson object of the product or None if not found
+        """
+        return products.find_one({"_id": bson.ObjectId(id)})
 
-def get_first_product_by_name(name:str ) -> any | None:
-    """Returns the first product with the given name
+def get_first_product_by_name(name:str ) -> Optional[any]:
+        """Returns the first product with the given name
 
-    Args:
-        name (str): Name of the product to find
+        Args:
+                name (str): Name of the product to find
 
-    Returns:
-        any | None: the bson object of the product or None if not found
-    """
-    return products.find_one({"name": name})
+        Returns:
+                Optional[any]: the bson object of the product or None if not found
+        """
+        return products.find_one({"name": name})
 
-def update_product_quantity(name: str, quantity: float) -> any | None: 
-    """Updates the quantity of the product with the given name
-    Will update all products with the given name
+def update_product_quantity(name: str, quantity: float) -> Optional[any]: 
+        """Updates the quantity of the product with the given name
+        Will update all products with the given name
 
-    Args:
-        name (str): the name of the product to update
-        quantity (int): the new quantity of the product
+        Args:
+                name (str): the name of the product to update
+                quantity (int): the new quantity of the product
 
-    Returns:
-        any | None: the first updated product or None if not found
-    """
-    products.update_one({"name": name}, {"$set": {"quantity": quantity}})
-    return products.find_one({"name": name})
+        Returns:
+                Optional[any]: the first updated product or None if not found
+        """
+        products.update_one({"name": name}, {"$set": {"quantity": quantity}})
+        return products.find_one({"name": name})
 
-def update_product_price(name: str, price: float) -> any | None:
-    """Updates the price of the product with the given name
-    Will update all products with the given name
+def update_product_price(name: str, price: float) -> Optional[any]:
+        """Updates the price of the product with the given name
+        Will update all products with the given name
 
-    Args:
-        name (str): the name of the product to update
-        price (float): the new price of the product
+        Args:
+                name (str): the name of the product to update
+                price (float): the new price of the product
 
-    Returns:
-        any | None: the first updated product or None if not found
-    """
-    products.update_one({"name": name}, {"$set": {"price": price}})
-    return products.find_one({"name": name})
+        Returns:
+                Optional[any]: the first updated product or None if not found
+        """
+        products.update_one({"name": name}, {"$set": {"price": price}})
+        return products.find_one({"name": name})
 
-def update_product_description(name: str, description: str) -> any | None:
-    """Updates the description of the product with the given name
-    Will update all products with the given name
+def update_product_description(name: str, description: str) -> Optional[any]:
+        """Updates the description of the product with the given name
+        Will update all products with the given name
 
-    Args:
-        name (str): the name of the product to update
-        description (str): the new description of the product
+        Args:
+                name (str): the name of the product to update
+                description (str): the new description of the product
 
-    Returns:
-        any | None: the first updated product or None if not found
-    """
-    products.update_one({"name": name}, {"$set": {"description": description}})
-    return products.find_one({"name": name})
+        Returns:
+                Optional[any]: the first updated product or None if not found
+        """
+        products.update_one({"name": name}, {"$set": {"description": description}})
+        return products.find_one({"name": name})
 
-def update_product_category(name: str, category: str) -> any | None:
-    """Updates the category of the product with the given name
-    Will update all products with the given name
+def update_product_category(name: str, category: str) -> Optional[any]:
+        """Updates the category of the product with the given name
+        Will update all products with the given name
 
-    Args:
-        name (str): the name of the product to update
-        category (str): the new category of the product
+        Args:
+                name (str): the name of the product to update
+                category (str): the new category of the product
 
-    Returns:
-        any | None: the first updated product or None if not found
-    """
-    products.update_one({"name": name}, {"$set": {"category": category}})
-    return products.find_one({"name": name})
+        Returns:
+                Optional[any]: the first updated product or None if not found
+        """
+        products.update_one({"name": name}, {"$set": {"category": category}})
+        return products.find_one({"name": name})
 
-def create_product(name: str, quantity: float, price: float = 0.0, description: str = "", category: str = "") -> any | None:
-    """Creates a new product
+def create_product(name: str, quantity: float, price: float = 0.0, description: str = "", category: str = "") -> Optional[any]:
+        """Creates a new product
 
-    Args:
-        name (str): the name of the product
-        quantity (float): the quantity of the product
-        price (float, optional): the price of the product. Defaults to 0.0.
-        description (str, optional): the description of the product. Defaults to "".
-        category (str, optional): the category of the product. Defaults to "".
+        Args:
+                name (str): the name of the product
+                quantity (float): the quantity of the product
+                price (float, optional): the price of the product. Defaults to 0.0.
+                description (str, optional): the description of the product. Defaults to "".
+                category (str, optional): the category of the product. Defaults to "".
 
-    Returns:
-        any | None: the created product or None if failed
-    """
-    products.insert_one({"name": name, "price": price, "quantity": quantity, "description": description, "category": category})
-    return products.find_one({"name": name})
+        Returns:
+                Optional[any]: the created product or None if failed
+        """
+        products.insert_one({"name": name, "price": price, "quantity": quantity, "description": description, "category": category})
+        return products.find_one({"name": name})
+    
+def get_id_from_name(name: str) -> str:
+        """Returns the id of the product with the given name
+
+        Args:
+                name (str): the name of the product to find
+
+        Returns:
+                str: the id of the product
+        """
+        return products.find_one({"name": name}, {"_id": 1})["_id"]
+    
+def delete_product_by_name(name: str) -> None:
+        """Deletes the product with the given name
+
+        Args:
+                name (str): the name of the product to delete
+        """
+        products.delete_one({"name": name})
+
+def delete_product_by_id(id: str) -> None:
+        """Deletes the product with the given id
+        
+        Args:
+                id (str): the id of the product to delete
+        """
+        products.delete_one({"_id": bson.ObjectId(id)})
