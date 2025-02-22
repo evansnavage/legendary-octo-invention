@@ -3,11 +3,12 @@ import pymongo
 import sys
 import bson
 import os
-from backend import dbEnvironmentVariable
+
+from .dbEnvironmentVariable import setEnvironmentVariables
 
 ### CONNECT AND TEST CONNECTION ###
 
-dbEnvironmentVariable.setEnvironmentVariables()
+setEnvironmentVariables()
 
 try:
     client = pymongo.MongoClient(os.getenv("MONGODB_URI", ""))

@@ -1,11 +1,15 @@
 from flask import Flask, request
-import item_access as ia
+import backend.src.item_access as ia
 
 app = Flask(__name__)
 
 @app.route('/')
 def hello_world():
     return '<h1>Hello, World!</h1>'
+
+@app.route('/get_all_items')
+def get_all_items():
+    return ia.get_all_items()
 
 @app.route('/get_item')
 def get_item():
