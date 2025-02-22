@@ -256,3 +256,26 @@ def update_item_distributor(name: str, distributor: str) -> Optional[any]:
         """
         items.update_one({"name": name}, {"$set": {"distributor": distributor}})
         return items.find_one({"name": name})
+
+def get_item_price(name: str) -> float:
+        """Returns the price of the item with the given name
+
+        Args:
+                name (str): the name of the item
+
+        Returns:
+                float: the price of the item
+        """
+        return items.find_one({"name": name}, {"price": 1})["price"]
+
+def get_items_by_tag(tag: str) -> Collection:
+        """Returns all items with the given tag
+
+        Args:
+                tag (str): the tag to search for
+
+        Returns:
+                Collection: the items with the given tag
+        """
+        data = items.find({"tags": {"$in": [tag]}}, {"_id": 0})
+        return [doc for doc in data]
