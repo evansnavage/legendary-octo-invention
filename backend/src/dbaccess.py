@@ -21,7 +21,7 @@ db = client.inventory
 
 test_items = db["items"]
 
-item_test_documents = [{ "name": "Green Paint", "price": 3.99, "quantity": 10, "description": "Paint that is green", "category": "Paint", "distributor": "Sherwin Williams" },
+item_test_documents = [{ "name": "Green Paint", "price": 3.99, "quantity": 10, "description": "Paint that is green", "tag": ["paint"], "distributor": "Sherwin Williams" },
                     { "name": "Blue Paint", "price": 3.99, "quantity": 10 },
                     { "name": "Red Paint", "price": 3.99, "quantity": 10 },
                     { "name": "Yellow Paint", "price": 3.99, "quantity": 10 }]
@@ -162,19 +162,31 @@ def update_item_description(name: str, description: str) -> Optional[any]:
         items.update_one({"name": name}, {"$set": {"description": description}})
         return items.find_one({"name": name})
 
-def update_item_category(name: str, category: str) -> Optional[any]:
-        """Updates the category of the item with the given name
-        Will update all items with the given name
+def add_tags(name: str, tags: list[str]) -> Optional[any]: 
+       """Adds the tags to the item with the given name
 
-        Args:
-                name (str): the name of the item to update
-                category (str): the new category of the item
+        Args: 
+                name(str): the name of the item to update
+                tags(list[str]): the list of tags to add to item
 
-        Returns:
-                Optional[any]: the first updated item or None if not found
-        """
-        items.update_one({"name": name}, {"$set": {"category": category}})
-        return items.find_one({"name": name})
+        Return:
+                Optional[any}: item updated or none if not found
+       
+       """
+       for tag in tags:
+            items.update_one({"name": name}, {"$push": {"tag": tag}})
+       return items.find_one({"name": name})
+
+def remove_tags(name: str, tags: list[str]) -> None:
+    """Removes the tags of the item with the given name 
+
+    Args:
+        name (str): the name of the item to update
+        tags (list[str]): the list of tags to remove from item
+    """
+    for tag in tags:
+        items.update_one({"name": name}, {"$pull": {"tag": tag}})
+
 
 def create_item(name: str, quantity: float, price: float = 0.0, description: str = "", category: str = "") -> Optional[any]:
         """Creates a new item

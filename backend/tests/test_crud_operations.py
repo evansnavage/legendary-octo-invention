@@ -65,12 +65,12 @@ class TestCRUDOperations(unittest.TestCase):
         item = get_items_by_name("test")[0]
         self.assertEqual(item['description'], "test2")
     
-    def test_update_item_category(self):
+    def test_add_tags(self):
         drop_all_items()
         create_item("test", 10, 10, "test", "test")
-        update_item_category("test", "test2")
+        add_tags("test", ["test2", "test3", "test4"])
         item = get_items_by_name("test")[0]
-        self.assertEqual(item['category'], "test2")
+        self.assertEqual(item['tag'], ["test2", "test3", "test4"])
     
     def test_delete_item_by_name(self):
         drop_all_items()
