@@ -1,0 +1,3 @@
+dbEnvironmentVariable.py
+*.pyc
+__pycache__

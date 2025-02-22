@@ -2,11 +2,15 @@ from typing import Collection, Optional
 import pymongo
 import sys
 import bson
+import os
+from backend import dbEnvironmentVariable
 
 ### CONNECT AND TEST CONNECTION ###
 
+dbEnvironmentVariable.setEnvironmentVariables()
+
 try:
-    client = pymongo.MongoClient("mongodb+srv://admin:1234@imscluster.vv08q.mongodb.net/")
+    client = pymongo.MongoClient(os.getenv("MONGODB_URI", ""))
     
 # return a friendly error if a URI error is thrown 
 except pymongo.errors.ConfigurationError:
