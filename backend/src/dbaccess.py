@@ -17,7 +17,7 @@ db = client.inventory
 
 test_products = db["products"]
 
-product_documents = [{ "name": "Green Paint", "price": 3.99, "quantity": 10, "description": "Paint that is green", "category": "Paint", "distributor": "Sherwin Williams" },
+product_test_documents = [{ "name": "Green Paint", "price": 3.99, "quantity": 10, "description": "Paint that is green", "category": "Paint", "distributor": "Sherwin Williams" },
                     { "name": "Blue Paint", "price": 3.99, "quantity": 10 },
                     { "name": "Red Paint", "price": 3.99, "quantity": 10 },
                     { "name": "Yellow Paint", "price": 3.99, "quantity": 10 }]
@@ -29,7 +29,7 @@ except pymongo.errors.OperationFailure:
         sys.exit(1)
 
 try:
-        result = test_products.insert_many(product_documents)
+        result = test_products.insert_many(product_test_documents)
 except pymongo.errors.OperationFailure:
         print("An authentication error was received. Are you sure your database user is authorized to perform write operations?")
         sys.exit(1)
@@ -41,7 +41,6 @@ else:
 ### END OF TEST OPERATIONS ###
 
 ### Basic Operation Setup ###
-
 products = db["products"]
 product_documents_default = [{ "name": "Green Paint", "price": 3.99, "quantity": 10, "description": "Paint that is green", "category": "Paint", "distributor": "Sherwin Williams" }]
 try:
@@ -56,7 +55,20 @@ else:
         print ("Database prepared.")
 
 ### CRUD OPERATIONS ###
+def set_active_database(testing: bool = False):
+    """Sets the active database to either the test database or the production database
 
+    Args:
+        testing (bool, optional): If True, sets the active database to the test database. Defaults to False.
+    """
+    global products
+    if testing:
+        products = db["test_products"]
+    else:
+        products = db["products"]
+
+# Set the default active database to production
+set_active_database(testing=False)
 def drop_all_products():
         """Drops all products from the database
         """
@@ -202,3 +214,15 @@ def delete_product_by_id(id: str) -> None:
                 id (str): the id of the product to delete
         """
         products.delete_one({"_id": bson.ObjectId(id)})
+
+def insert_many_products(product_documents: Collection) -> int:
+        """Inserts many products into the database
+
+        Args:
+                product_documents (Collection): the documents to insert
+
+        Returns:
+                int: the number of documents inserted
+        """
+        result = products.insert_many(product_documents)
+        return len(result.inserted_ids)
