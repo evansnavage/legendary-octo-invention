@@ -4,11 +4,11 @@ import sys
 import bson
 import os
 import backend.src.item_access as item_access
-from backend import dbEnvironmentVariable
+from .dbEnvironmentVariable import setEnvironmentVariables
 
 ### CONNECT AND TEST CONNECTION ###
 
-dbEnvironmentVariable.setEnvironmentVariables()
+setEnvironmentVariables()
 
 try:
     client = pymongo.MongoClient(os.getenv("MONGODB_URI", ""))

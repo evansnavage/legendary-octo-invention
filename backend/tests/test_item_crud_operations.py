@@ -2,7 +2,7 @@ import unittest
 
 from backend.src.item_access import *
 
-class TestCRUDOperations(unittest.TestCase):
+class TestItemCRUDOperations(unittest.TestCase):
     
     def setUp(self):
         set_active_database(testing=True)

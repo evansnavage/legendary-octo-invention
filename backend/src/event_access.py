@@ -4,6 +4,8 @@ import sys
 import bson
 import os
 
+import backend.src.item_access as ia
+import backend.src.kit_access as ka
 from .dbEnvironmentVariable import setEnvironmentVariables
 
 setEnvironmentVariables()
@@ -160,7 +162,7 @@ def get_event_by_id(id: str) -> Optional[any]:
     """
     return events.find_one({"_id": bson.ObjectId(id)})
 
-def update_event(name: str, date: str = None, time: str = None, people: int = None, description: str = None, tags: list = None, kits: list = None) -> Optional[any]:
+def update_event(name: str, date: str = None, time: str = None, people: int = None, description: str = None, tags: list = None, kits: list[str] = None) -> Optional[any]:
     """Updates the event with the given name in the active database
 
     Args:
@@ -170,7 +172,7 @@ def update_event(name: str, date: str = None, time: str = None, people: int = No
         people (int, optional): Number of people at the event. Defaults to None.
         description (str, optional): Description of the event. Defaults to None.
         tags (list, optional): Tags for the event. Defaults to None.
-        kits (list, optional): Kits for the event. Defaults to None.
+        kits (list[str], optional): List of kit names for the event. Defaults to None.
     Returns:
         Optional[any]: Updated event
     """
@@ -186,7 +188,12 @@ def update_event(name: str, date: str = None, time: str = None, people: int = No
     if tags is not None:
         update_fields["tags"] = tags
     if kits is not None:
-        update_fields["kits"] = kits
+        actual_kits = []
+        for kit_name in kits:
+            kit = ka.get_kit_by_name(kit_name)
+            if kit:
+                actual_kits.append(kit)
+        update_fields["kits"] = actual_kits
 
     if update_fields:
         events.update_one({"name": name}, {"$set": update_fields})
@@ -249,6 +256,13 @@ def create_event(name: str, date: str, time: str, people: int = 0, description: 
     Returns:
         Optional[any]: Created event
     """
+    actual_kits = []
+    if kits is not None:
+        for kit_name in kits:
+            kit = ka.get_kit_by_name(kit_name)
+            if kit:
+                actual_kits.append(kit)
+
     event = {
         "name": name,
         "date": date,
@@ -256,7 +270,7 @@ def create_event(name: str, date: str, time: str, people: int = 0, description: 
         "people": people,
         "description": description,
         "tags": tags if tags is not None else [],
-        "kits": kits if kits is not None else []
+        "kits": actual_kits
     }
     events.insert_one(event)
     return get_event_by_name(name)
@@ -291,7 +305,7 @@ def get_events_on_date(date: str) -> Collection:
     """
     return list(events.find({"date": date}))
 
-def get_events_on_date_range(start_date: str, end_date: str) -> Collection:
+def get_events_in_date_range(start_date: str, end_date: str) -> Collection:
     """Returns all events in the given date range from the active database
 
     Args:
@@ -321,3 +335,13 @@ def get_events_with_tags(tags: list[str]) -> Collection:
         Collection: Collection of all events with the given tags
     """
     return list(events.find({"tags": {"$all": tags}}))
+
+def insert_many_events(event_documents: list[any]) -> Collection:
+    """Inserts many events into the active database
+
+    Args:
+        event_documents (list[dict]): List of events to insert
+    Returns:
+        Collection: Collection of all inserted events
+    """
+    return events.insert_many(event_documents)
