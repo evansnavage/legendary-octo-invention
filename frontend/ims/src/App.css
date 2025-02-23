@@ -1,5 +1,13 @@
+:root {
+  --primary: #f3f3f3;
+  --secondary: #F2ECFB;
+  --accent: #C0B6CF;
+  --background: #ffffff;
+  --text: #1E1E1E;
+}
+
 .App {
-  text-align: center;
+  text-align: center
 }
 
 .App-logo {
