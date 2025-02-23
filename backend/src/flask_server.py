@@ -1,74 +1,60 @@
 from flask import Flask, request
+from flask_cors import CORS
 import backend.src.item_access as ia
 
 app = Flask(__name__)
+CORS(app)
 
-@app.route('/')
-def hello_world():
-    return '<h1>Hello, World!</h1>'
-
-@app.route('/get_all_items')
+@app.route('/get_all_items', methods=['GET'])
 def get_all_items():
     return ia.get_all_items()
 
-@app.route('/get_item')
+@app.route('/get_item', methods=['GET'])
 def get_item():
-    name = request.args.get('name')
-    return ia.get_items_by_name(name)
+    item_id = request.args.get('item_id')
+    return ia.get_item(item_id)
 
-@app.route('/update_item_quantity')
-def update_item_quantity():
-    name = request.args.get('name')
-    quantity = request.args.get('quantity')
-    return ia.update_item_quantity(name, quantity)
-
-@app.route('/update_item_price')
-def update_item_price():
-    name = request.args.get('name')
-    price = request.args.get('price')
-    return ia.update_item_price(name, price)
-
-@app.route('/update_item_description')
-def update_item_description():
-    name = request.args.get('name')
-    description = request.args.get('description')
-    return ia.update_item_description(name, description)
-
-@app.route('/add_tags')
-def add_tags():
-    name = request.args.get('name')
-    tags = request.args.get('tags')
-    return ia.add_tags(name, tags)
-
-@app.route('/remove_tags')
-def remove_tags():
-    name = request.args.get('name')
-    tags = request.args.get('tags')
-    return ia.remove_tags(name, tags)
-
-@app.route('/delete_item')
-def delete_item_by_name():
-    name = request.args.get('name')
-    return ia.delete_item_by_name(name)
-
-@app.route('/create_item')
+@app.route('/create_item', methods=['POST'])
 def create_item():
-    name = request.args.get('name')
-    quantity = request.args.get('quantity')
-    price = request.args.get('price')
-    description = request.args.get('description')
-    tags = request.args.get('tags')
-    return ia.create_item(name, quantity, price, description, tags)
+    item = request.json
+    print(item)
+    name = item.get('name', '')
+    description = item.get('description', '')
+    price = item.get('price', 0.0)
+    quantity = item.get('quantity', 0)
+    tags = item.get('tags', '')
 
-@app.route('/get_price')
-def get_price():
-    name = request.args.get('name')
-    return ia.get_price(name)
+    if tags:
+        tags = tags.split(' ')
+    else:
+        tags = []
 
-@app.route('/get_quantity')
-def get_quantity():
-    name = request.args.get('name')
-    return ia.get_item_quantity(name)
+    if not name or not quantity:
+        return 'Missing required fields, name or quantity', 400
+
+    ia.create_item(name, quantity, price, description, tags)
+    
+    return ['Item created', 200]
+
+@app.route('/update_item', methods=['POST'])
+def update_item():
+    item = request.json
+    item_id = item.get('item_id')
+    name = item.get('name')
+    description = item.get('description')
+    price = item.get('price')
+    quantity = item.get('quantity')
+    tags = item.get('tags')
+
+    if tags:
+        tags = tags.split(' ')
+
+    if not name or not quantity:
+        return 'Missing required fields, name or quantity', 400
+
+    ia.update_item(item_id, name, description, price, quantity, tags)
+    
+    return ['Item updated', 200]
 
 if __name__ == '__main__':
     app.run(debug=True)
